@@ -28,5 +28,15 @@ the compiler enforces) the goal is to have it compiled for all environments
 
 The library here is the next iteration after c41.
 
+Compiling
+====
+For generating character width tables (ucw8.c) one must download the Unicode
+description files UnicodeData and EastAsianWith. At the time of writing this,
+they can be found at:
+ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt
+ftp://ftp.unicode.org/Public/UNIDATA/EastAsianWidth.txt
+
+To generate ucw8.c run:
+  ruby cw.rb UnicodeData.txt EastAsianWidth.txt 8 > ucw8.c
 
 License: BSD 2-clause
