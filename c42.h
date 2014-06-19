@@ -1053,6 +1053,10 @@ C42_API uint_fast8_t C42_CALL c42_clconv_c_escape
 #define C42_IO8_FMT_WRITE_ERROR 18 /**< write error */
 #define C42_IO8_FMT_CONV_ERROR 19 /**< conversion error during escaping of some string */
 #define C42_IO8_FMT_NO_CODE 20 /**< formatting code not implemented */
+#define C42_IO8_BAD_OP 21 
+    /**< bad operation; (e.g. write on a read-only file, seek on stdin, etc) */
+#define C42_IO8_NA 22 
+    /**< feature not available (close read-side of a regular file) */
 #define C42_IO8_NOT_IMPLEMENTED 126 /**< feature not implemented */
 #define C42_IO8_OTHER_ERROR 127
     /**< and now for something completely different! */
@@ -1317,8 +1321,8 @@ typedef struct c42_fsa_s c42_fsa_t;
 struct c42_fsa_s
 {
     /** File open function pointer.
-     *  @param [out] io_p
-     *      receives the io8 object
+     *  @param [out] io
+     *      gets the inited io object
      *  @param [in] path
      *      a NUL-terminated byte-array with the path to open
      *  @param [in] mode
@@ -1334,7 +1338,7 @@ struct c42_fsa_s
      */
     uint_fast8_t (C42_CALL * file_open)
         (
-            c42_io8_t * * io_p,
+            c42_io8_t * io,
             uint8_t const * path,
             int mode,
             void * context
@@ -1351,12 +1355,12 @@ struct c42_fsa_s
 C42_INLINE uint_fast8_t C42_CALL c42_file_open
 (
     c42_fsa_t * fsa,
-    c42_io8_t * * io_p,
+    c42_io8_t * io,
     uint8_t const * path,
     int mode
 )
 {
-    return fsa->file_open(io_p, path, mode, fsa->file_open_context);
+    return fsa->file_open(io, path, mode, fsa->file_open_context);
 }
 
 /** @} */
@@ -1971,6 +1975,7 @@ struct c42_svc_s
      *  for the services provided in this structure
      */
     c42_ma_t * ma; /**< mem allocator */
+    c42_smt_t * smt; /**< simple multithreading interface */
     c42_fsa_t * fsa; /**< file system interface */
 };
 
