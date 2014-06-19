@@ -1057,6 +1057,10 @@ C42_API uint_fast8_t C42_CALL c42_clconv_c_escape
 #define C42_IO8_OTHER_ERROR 127
     /**< and now for something completely different! */
 
+#define C42_IO8_OP_READ 1
+#define C42_IO8_OP_WRITE 2
+#define C42_IO8_OP_SEEK 4
+
 /* c42_io8_t ****************************************************************/
 /**
  * 8-bit I/O stream.
@@ -1072,33 +1076,37 @@ typedef struct c42_io8_class_s c42_io8_class_t;
 struct c42_io8_class_s
 {
     uint_fast8_t (C42_CALL * read)
-        (c42_io8_t * io, uint8_t * data, size_t size, size_t * rsize);
+        (uintptr_t ctx, uint8_t * data, size_t size, size_t * rsize);
     /**< function pointer for the read operation. */
 
     uint_fast8_t (C42_CALL * write)
-        (c42_io8_t * io, uint8_t const * data, size_t size, size_t * wsize);
+        (uintptr_t ctx, uint8_t const * data, size_t size, size_t * wsize);
     /**< function pointer for the write operation. */
 
     uint_fast8_t (C42_CALL * seek)
-        (c42_io8_t * io, ptrdiff_t offset, int anchor, size_t * pos);
+        (uintptr_t ctx, ptrdiff_t offset, int anchor, size_t * pos);
     /**< function pointer for seeking with ptrdiff_t offset */
 
     uint_fast8_t (C42_CALL * seek64)
-        (c42_io8_t * io, int64_t offset, int anchor, uint64_t * pos);
+        (uintptr_t ctx, int64_t offset, int anchor, uint64_t * pos);
     /**< function pointer for seeing with 64-bit int pointer */
 
     uint_fast8_t (C42_CALL * truncate)
-        (c42_io8_t * io);
+        (uintptr_t ctx);
     /**< function pointer for truncate operation */
 
     uint_fast8_t (C42_CALL * close)
-        (c42_io8_t * io);
-    /**< function pointer for closing the stream */
+        (uintptr_t ctx, int mode);
+    /**< function pointer for closing the stream.
+     *  @param ctx [in] context
+     *  @param mode [in] bitmask with flags: C42_IO8_OP_READ | C42_IO8_OP_WRITE
+     **/
 };
 
 struct c42_io8_s
 {
     c42_io8_class_t * io8_class; /**< pointer to the io8 class */
+    uintptr_t context; /**< context to be passed to io functions */
 };
 
 /* c42_io8_read *************************************************************/
@@ -1272,41 +1280,41 @@ C42_API c42_io8_t * C42_CALL c42_io8bc_init
 
 /** @} */
 
-/* fsi **********************************************************************/
-/** @defgroup fsi Filesystem interface
+/* fsa **********************************************************************/
+/** @defgroup fsa Filesystem interface
  *  @{
  */
 
-#define C42_FSI_SOME_ERROR 1 /**< exactly! */
-#define C42_FSI_BAD_MODE 2 /**< error: bad open mode specified. */
-#define C42_FSI_NO_MEM 3 /**< no mem to open the file */
+#define C42_FSA_SOME_ERROR 1 /**< exactly! */
+#define C42_FSA_BAD_MODE 2 /**< error: bad open mode specified. */
+#define C42_FSA_NO_MEM 3 /**< no mem to open the file */
 
-#define C42_FSI_OPEN_EXISTING 0 /**< opens existing file or fails */
-#define C42_FSI_OPEN_ALWAYS 1 /**< opens existing file or creates a new one */
-#define C42_FSI_CREATE_NEW 2 /**< fails if the file exists, otherwise creates it */
-#define C42_FSI_CREATE_ALWAYS 3 /**< truncates existing or creates new */
-#define C42_FSI_TRUNC_EXISTING 4 /**< truncates existing or fails */
-#define C42_FSI_READ (1 << 3) /**< request read access */
-#define C42_FSI_WRITE (1 << 4) /**< request write access */
-#define C42_FSI_RW (C42_FSI_READ | C42_FSI_WRITE) /**< request read/write access */
-#define C42_FSI_PERM_SHIFT 5 /**< bit shift constant for create permissions */
-#define C42_FSI_UR (1 << (C42_FSI_PERM_SHIFT + 8)) /**< user-read permission */
-#define C42_FSI_UW (1 << (C42_FSI_PERM_SHIFT + 7)) /**< user-write permission */
-#define C42_FSI_UX (1 << (C42_FSI_PERM_SHIFT + 6)) /**< user-execute permission */
-#define C42_FSI_GR (1 << (C42_FSI_PERM_SHIFT + 5)) /**< group-read permission */
-#define C42_FSI_GW (1 << (C42_FSI_PERM_SHIFT + 4)) /**< group-write permission */
-#define C42_FSI_GX (1 << (C42_FSI_PERM_SHIFT + 3)) /**< group-execute permission */
-#define C42_FSI_OR (1 << (C42_FSI_PERM_SHIFT + 2)) /**< others-read perm */
-#define C42_FSI_OW (1 << (C42_FSI_PERM_SHIFT + 1)) /**< others-write perm */
-#define C42_FSI_OX (1 << (C42_FSI_PERM_SHIFT + 0)) /**< others-execute perm */
+#define C42_FSA_OPEN_EXISTING 0 /**< opens existing file or fails */
+#define C42_FSA_OPEN_ALWAYS 1 /**< opens existing file or creates a new one */
+#define C42_FSA_CREATE_NEW 2 /**< fails if the file exists, otherwise creates it */
+#define C42_FSA_CREATE_ALWAYS 3 /**< truncates existing or creates new */
+#define C42_FSA_TRUNC_EXISTING 4 /**< truncates existing or fails */
+#define C42_FSA_READ (1 << 3) /**< request read access */
+#define C42_FSA_WRITE (1 << 4) /**< request write access */
+#define C42_FSA_RW (C42_FSA_READ | C42_FSA_WRITE) /**< request read/write access */
+#define C42_FSA_PERM_SHIFT 5 /**< bit shift constant for create permissions */
+#define C42_FSA_UR (1 << (C42_FSA_PERM_SHIFT + 8)) /**< user-read permission */
+#define C42_FSA_UW (1 << (C42_FSA_PERM_SHIFT + 7)) /**< user-write permission */
+#define C42_FSA_UX (1 << (C42_FSA_PERM_SHIFT + 6)) /**< user-execute permission */
+#define C42_FSA_GR (1 << (C42_FSA_PERM_SHIFT + 5)) /**< group-read permission */
+#define C42_FSA_GW (1 << (C42_FSA_PERM_SHIFT + 4)) /**< group-write permission */
+#define C42_FSA_GX (1 << (C42_FSA_PERM_SHIFT + 3)) /**< group-execute permission */
+#define C42_FSA_OR (1 << (C42_FSA_PERM_SHIFT + 2)) /**< others-read perm */
+#define C42_FSA_OW (1 << (C42_FSA_PERM_SHIFT + 1)) /**< others-write perm */
+#define C42_FSA_OX (1 << (C42_FSA_PERM_SHIFT + 0)) /**< others-execute perm */
 
-/* c42_fsi_t ****************************************************************/
+/* c42_fsa_t ****************************************************************/
 /**
  *  File-system interface.
  *
  */
-typedef struct c42_fsi_s c42_fsi_t;
-struct c42_fsi_s
+typedef struct c42_fsa_s c42_fsa_t;
+struct c42_fsa_s
 {
     /** File open function pointer.
      *  @param [out] io_p
@@ -1314,15 +1322,15 @@ struct c42_fsi_s
      *  @param [in] path
      *      a NUL-terminated byte-array with the path to open
      *  @param [in] mode
-     *      one of C42_FSI_OPEN_EXISTING, C42_FSI_OPEN_ALWAYS,
-     *      C42_FSI_CREATE_NEW, C42_FSI_CREATE_ALWAYS, C42_FSI_TRUNC_EXISTING
-     *      bitwise ORed with one of: C42_FSI_READ, C42_FSI_WRITE, C42_FSI_RW
+     *      one of C42_FSA_OPEN_EXISTING, C42_FSA_OPEN_ALWAYS,
+     *      C42_FSA_CREATE_NEW, C42_FSA_CREATE_ALWAYS, C42_FSA_TRUNC_EXISTING
+     *      bitwise ORed with one of: C42_FSA_READ, C42_FSA_WRITE, C42_FSA_RW
      *      and if file creation is allowed any bitwise OR mask with
-     *      C42_FSI_UR, C42_FSI_UW, C42_FSI_UX,
-     *      C42_FSI_GR, C42_FSI_GW, C42_FSI_GX,
-     *      C42_FSI_OR, C42_FSI_OW, C42_FSI_OX.
+     *      C42_FSA_UR, C42_FSA_UW, C42_FSA_UX,
+     *      C42_FSA_GR, C42_FSA_GW, C42_FSA_GX,
+     *      C42_FSA_OR, C42_FSA_OW, C42_FSA_OX.
      *  @param context
-     *      value stored in c42_fsi_t#file_open_context
+     *      value stored in c42_fsa_t#file_open_context
      */
     uint_fast8_t (C42_CALL * file_open)
         (
@@ -1332,7 +1340,7 @@ struct c42_fsi_s
             void * context
         );
 
-    /** Context pointer for c42_fsi_t#file_open function. */
+    /** Context pointer for c42_fsa_t#file_open function. */
     void * file_open_context;
 };
 
@@ -1342,13 +1350,13 @@ struct c42_fsi_s
  */
 C42_INLINE uint_fast8_t C42_CALL c42_file_open
 (
-    c42_fsi_t * fsi,
+    c42_fsa_t * fsa,
     c42_io8_t * * io_p,
     uint8_t const * path,
     int mode
 )
 {
-    return fsi->file_open(io_p, path, mode, fsi->file_open_context);
+    return fsa->file_open(io_p, path, mode, fsa->file_open_context);
 }
 
 /** @} */
@@ -1963,7 +1971,19 @@ struct c42_svc_s
      *  for the services provided in this structure
      */
     c42_ma_t * ma; /**< mem allocator */
-    c42_fsi_t * fsi; /**< file system interface */
+    c42_fsa_t * fsa; /**< file system interface */
+};
+
+/* c42_io8_std_t ************************************************************/
+/**
+ *  Standard io8 streams.
+ */
+typedef struct c42_io8_std_s c42_io8_std_t;
+struct c42_io8_std_s
+{
+    c42_io8_t in; /**< program standard input stream */
+    c42_io8_t out; /**< program standard output stream */
+    c42_io8_t err; /**< program standard error stream */
 };
 
 /* c42_clia_t ***************************************************************/
@@ -1973,9 +1993,7 @@ struct c42_svc_s
 typedef struct c42_clia_s c42_clia_t;
 struct c42_clia_s
 {
-    c42_io8_t * in; /**< program standard input stream */
-    c42_io8_t * out; /**< program standard output stream */
-    c42_io8_t * err; /**< program standard error stream */
+    c42_io8_std_t stdio; /**< standard I/O */
     uint8_t const * program; /**< C-style UTF-8 string with program name */
     uint8_t const * const * args;
         /**< array of C-style UTF-8 strings for arguments */

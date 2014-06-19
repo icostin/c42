@@ -971,7 +971,7 @@ C42_API uint_fast8_t C42_CALL c42_io8_read
 #if _DEBUG
     if (io->io8_class->read == NULL) return C42_IO8_NOT_IMPLEMENTED;
 #endif
-    return io->io8_class->read(io, data, size, rsize);
+    return io->io8_class->read(io->context, data, size, rsize);
 }
 
 /* c42_io8_read_full ********************************************************/
@@ -1027,7 +1027,7 @@ C42_API uint_fast8_t C42_CALL c42_io8_write
 #if _DEBUG
     if (io->io8_class->write == NULL) return C42_IO8_NOT_IMPLEMENTED;
 #endif
-    return io->io8_class->write(io, data, size, wsize);
+    return io->io8_class->write(io->context, data, size, wsize);
 }
 
 /* c42_io8_write_full *******************************************************/
@@ -1149,13 +1149,13 @@ C42_API uint_fast8_t C42_CALL c42_io8_wfmt
 /* io8bc_write **************************************************************/
 static uint_fast8_t C42_CALL io8bc_write
 (
-    c42_io8_t * io,
+    uintptr_t ctx,
     uint8_t const * data,
     size_t size,
     size_t * wsize
 )
 {
-    c42_io8bc_t * a = (c42_io8bc_t *) io;
+    c42_io8bc_t * a = (c42_io8bc_t *) ctx;
     if (a->offset + size < size)
     {
         *wsize = 0;
@@ -1193,6 +1193,7 @@ C42_API c42_io8_t * C42_CALL c42_io8bc_init
 )
 {
     io8bc->io8.io8_class = &io8bc_class;
+    io8bc->io8.context = (uintptr_t) io8bc;
     io8bc->data = data;
     io8bc->limit = limit;
     io8bc->offset = 0;
