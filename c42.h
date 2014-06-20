@@ -144,6 +144,8 @@ Headers allowed in a conforming C99 freestanding environment:
 #undef C42_MIPS
 #undef C42_AMD64
 #undef C42_IA32
+#undef C42_ALPHA
+#undef C42_SPARC
 
 #undef C42_BSLE
 #undef C42_BSBE
@@ -1400,7 +1402,7 @@ typedef struct c42_ma_s c42_ma_t;
 struct c42_ma_s
 {
     c42_ma_f handler; /**< handler function */
-    void * ctx; /**< implementation specific context data */
+    void * context; /**< implementation specific context data */
 };
 
 /* c42_ma_alloc *************************************************************/
@@ -1418,7 +1420,7 @@ C42_INLINE uint_fast8_t c42_ma_alloc
     ptrdiff_t new_size = item_size * count;
     if ((ptrdiff_t) item_size <= 0) return C42_MA_BAD_ITEM_SIZE;
     if (new_size / item_size != count) return C42_MA_SIZE_OVERFLOW;
-    return ma_p->handler(ptr_p, 0, new_size, ma_p->ctx);
+    return ma_p->handler(ptr_p, 0, new_size, ma_p->context);
 }
 
 /* c42_ma_realloc ***********************************************************/
@@ -1437,7 +1439,7 @@ C42_INLINE uint_fast8_t c42_ma_realloc
     ptrdiff_t new_size = item_size * new_count;
     if ((ptrdiff_t) item_size <= 0) return C42_MA_BAD_ITEM_SIZE;
     if (new_size / item_size != new_count) return C42_MA_SIZE_OVERFLOW;
-    return ma_p->handler(ptr_p, item_size * old_count, new_size, ma_p->ctx);
+    return ma_p->handler(ptr_p, item_size * old_count, new_size, ma_p->context);
 }
 
 /* c42_ma_free **************************************************************/
@@ -1452,7 +1454,7 @@ C42_INLINE uint_fast8_t c42_ma_free
     size_t count
 )
 {
-    return ma_p->handler(&ptr, item_size * count, 0, ma_p->ctx);
+    return ma_p->handler(&ptr, item_size * count, 0, ma_p->context);
 }
 
 /* C42_MA_ARRAY_ALLOC *******************************************************/
@@ -1974,9 +1976,9 @@ struct c42_svc_s
     /**< NUL-terminated UTF-8 string holding the name of the implementation
      *  for the services provided in this structure
      */
-    c42_ma_t * ma; /**< mem allocator */
-    c42_smt_t * smt; /**< simple multithreading interface */
-    c42_fsa_t * fsa; /**< file system interface */
+    c42_ma_t ma; /**< mem allocator */
+    c42_smt_t smt; /**< simple multithreading interface */
+    c42_fsa_t fsa; /**< file system interface */
 };
 
 /* c42_io8_std_t ************************************************************/
