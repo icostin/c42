@@ -1884,6 +1884,8 @@ struct c42_rbtree_node_s
 {
     c42_rbtree_node_t * links[2]; /**< left/right links */
     uint8_t red; /**< node is red if 1, black if 0 */
+    uint8_t extra1;
+    uint16_t extra2;
 };
 
 /* c42_rbtree_t *************************************************************/
