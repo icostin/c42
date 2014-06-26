@@ -1714,3 +1714,13 @@ C42_API void C42_CALL c42_rbtree_delete
 #undef IS_RED
 #undef IS_BLACK
 
+/* c42_u32_bit_width ********************************************************/
+C42_API uint_fast8_t C42_CALL c42_u32_bit_width (uint32_t n)
+{
+    uint_fast8_t i;
+    for (i = 0x1F; i; --i)
+        if (n >> i) return i + 1;
+    /* n is 0 or 1 */
+    return (uint_fast8_t) n;
+}
+

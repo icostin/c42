@@ -1966,6 +1966,15 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
 /** C42 library minor version */
 #define C42_MINOR 0
 
+/* c42_u32_top_bit **********************************************************/
+/**
+ *  Returns the number of bits needed to store the given value.
+ *  For instance for value 0 it returns 0, for 1 returns 1, 
+ *  for 2 and 3 returns 2, for 4..7 return 3 and so on.
+ */
+C42_API uint_fast8_t C42_CALL c42_u32_bit_width (uint32_t n);
+
+
 /* c42_svc_t ****************************************************************/
 /**
  *  Structure containing pointers to all interfaces for services defined
