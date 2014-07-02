@@ -56,6 +56,39 @@ C42_API void C42_CALL c42_u8a_copy
     while (len--) *dest++ = *src++;
 }
 
+/* c42_u16a_copy ************************************************************/
+C42_API void C42_CALL c42_u16a_copy
+(
+    uint16_t * restrict dest,
+    uint16_t const * restrict src,
+    size_t len
+)
+{
+    while (len--) *dest++ = *src++;
+}
+
+/* c42_u32a_copy ************************************************************/
+C42_API void C42_CALL c42_u32a_copy
+(
+    uint32_t * restrict dest,
+    uint32_t const * restrict src,
+    size_t len
+)
+{
+    while (len--) *dest++ = *src++;
+}
+
+/* c42_u64a_copy ************************************************************/
+C42_API void C42_CALL c42_u64a_copy
+(
+    uint64_t * restrict dest,
+    uint64_t const * restrict src,
+    size_t len
+)
+{
+    while (len--) *dest++ = *src++;
+}
+
 /* c42_u8a_set **************************************************************/
 C42_API void C42_CALL c42_u8a_set
 (
@@ -67,11 +100,142 @@ C42_API void C42_CALL c42_u8a_set
     while (len--) *dest++ = value;
 }
 
+/* c42_u16a_set *************************************************************/
+C42_API void C42_CALL c42_u16a_set
+(
+    uint16_t * restrict dest,
+    uint_fast16_t value,
+    size_t len
+)
+{
+    while (len--) *dest++ = value;
+}
+
+/* c42_u32a_set *************************************************************/
+C42_API void C42_CALL c42_u32a_set
+(
+    uint32_t * restrict dest,
+    uint_fast32_t value,
+    size_t len
+)
+{
+    while (len--) *dest++ = value;
+}
+
+/* c42_u64a_set *************************************************************/
+C42_API void C42_CALL c42_u64a_set
+(
+    uint64_t * restrict dest,
+    uint_fast64_t value,
+    size_t len
+)
+{
+    while (len--) *dest++ = value;
+}
+
 /* c42_u8a_cmp **************************************************************/
 C42_API int C42_CALL c42_u8a_cmp
 (
     uint8_t const * a,
     uint8_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_u16a_cmp *************************************************************/
+C42_API int C42_CALL c42_u16a_cmp
+(
+    uint16_t const * a,
+    uint16_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_u32a_cmp *************************************************************/
+C42_API int C42_CALL c42_u32a_cmp
+(
+    uint32_t const * a,
+    uint32_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_u64a_cmp *************************************************************/
+C42_API int C42_CALL c42_u64a_cmp
+(
+    uint64_t const * a,
+    uint64_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_i8a_cmp **************************************************************/
+C42_API int C42_CALL c42_i8a_cmp
+(
+    int8_t const * a,
+    int8_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_i16a_cmp *************************************************************/
+C42_API int C42_CALL c42_i16a_cmp
+(
+    int16_t const * a,
+    int16_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_i32a_cmp *************************************************************/
+C42_API int C42_CALL c42_i32a_cmp
+(
+    int32_t const * a,
+    int32_t const * b,
+    size_t len
+)
+{
+    size_t i;
+    for (i = 0; i < len; ++i)
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : +1;
+    return 0;
+}
+
+/* c42_i64a_cmp *************************************************************/
+C42_API int C42_CALL c42_i64a_cmp
+(
+    int64_t const * a,
+    int64_t const * b,
     size_t len
 )
 {

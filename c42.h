@@ -235,6 +235,42 @@ C42_API void C42_CALL c42_u8a_copy
     size_t len
 );
 
+/* c42_u16a_copy ************************************************************/
+/**
+ *  Copies a block of 16-bit ints.
+ *  @warning the arrays must not overlap.
+ */
+C42_API void C42_CALL c42_u16a_copy
+(
+    uint16_t * restrict dest,
+    uint16_t const * restrict src,
+    size_t len
+);
+
+/* c42_u32a_copy ************************************************************/
+/**
+ *  Copies a block of 32-bit ints.
+ *  @warning the arrays must not overlap.
+ */
+C42_API void C42_CALL c42_u32a_copy
+(
+    uint32_t * restrict dest,
+    uint32_t const * restrict src,
+    size_t len
+);
+
+/* c42_u64a_copy ************************************************************/
+/**
+ *  Copies a block of 64-bit ints.
+ *  @warning the arrays must not overlap.
+ */
+C42_API void C42_CALL c42_u64a_copy
+(
+    uint64_t * restrict dest,
+    uint64_t const * restrict src,
+    size_t len
+);
+
 /* c42_u8a_set **************************************************************/
 /**
  *  Sets all bytes to the value given.
@@ -243,6 +279,39 @@ C42_API void C42_CALL c42_u8a_set
 (
     uint8_t * restrict dest,
     uint_fast8_t value,
+    size_t len
+);
+
+/* c42_u16a_set *************************************************************/
+/**
+ *  Sets all 16-bit ints to the value given.
+ */
+C42_API void C42_CALL c42_u16a_set
+(
+    uint16_t * restrict dest,
+    uint_fast16_t value,
+    size_t len
+);
+
+/* c42_u32a_set *************************************************************/
+/**
+ *  Sets all 32-bit ints to the value given.
+ */
+C42_API void C42_CALL c42_u32a_set
+(
+    uint32_t * restrict dest,
+    uint_fast32_t value,
+    size_t len
+);
+
+/* c42_u64a_set *************************************************************/
+/**
+ *  Sets all 64-bit ints to the value given.
+ */
+C42_API void C42_CALL c42_u64a_set
+(
+    uint64_t * restrict dest,
+    uint_fast64_t value,
     size_t len
 );
 
@@ -290,6 +359,183 @@ C42_API int C42_CALL c42_u8a_cmp
  */
 #define C42_U8A_EQLIT(_a, _lit) \
     (C42_U8A_EQUAL((_a), (uint8_t const *) (_lit), sizeof(_lit) - 1))
+
+/* c42_u16a_cmp *************************************************************/
+/**
+ *  Compares bytes.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 16-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_u16a_cmp
+(
+    uint16_t const * a,
+    uint16_t const * b,
+    size_t len
+);
+
+/* c42_u16a_equal ***********************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_U16A_EQUAL(_a, _b, _l) (c42_u16a_cmp((_a), (_b), (_l)) == 0)
+
+/* c42_u32a_cmp *************************************************************/
+/**
+ *  Compares bytes.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 32-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_u32a_cmp
+(
+    uint32_t const * a,
+    uint32_t const * b,
+    size_t len
+);
+
+/* c42_u32a_equal ***********************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_U32A_EQUAL(_a, _b, _l) (c42_u32a_cmp((_a), (_b), (_l)) == 0)
+
+/* c42_u64a_cmp *************************************************************/
+/**
+ *  Compares bytes.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 64-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_u64a_cmp
+(
+    uint64_t const * a,
+    uint64_t const * b,
+    size_t len
+);
+
+/* c42_u64a_equal ***********************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_U64A_EQUAL(_a, _b, _l) (c42_u64a_cmp((_a), (_b), (_l)) == 0)
+
+/* c42_i8a_cmp **************************************************************/
+/**
+ *  Compares signed 8-bit ints.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 8-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_i8a_cmp
+(
+    int8_t const * a,
+    int8_t const * b,
+    size_t len
+);
+
+/* c42_i8a_equal ************************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_I8A_EQUAL(_a, _b, _l) (c42_i8a_cmp((_a), (_b), (_l)) == 0)
+
+/* C42_I8A_EQLIT ************************************************************/
+/**
+ *  Returns true if the given byte array starts with the same bytes as the
+ *  given string literal without the NUL terminator.
+ *  Example: C42_I8A_EQLIT(url, "http://")
+ */
+#define C42_I8A_EQLIT(_a, _lit) \
+    (C42_I8A_EQUAL((_a), (int8_t const *) (_lit), sizeof(_lit) - 1))
+
+/* c42_i16a_cmp *************************************************************/
+/**
+ *  Compares bytes.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 16-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_i16a_cmp
+(
+    int16_t const * a,
+    int16_t const * b,
+    size_t len
+);
+
+/* c42_i16a_equal ***********************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_I16A_EQUAL(_a, _b, _l) (c42_i16a_cmp((_a), (_b), (_l)) == 0)
+
+/* c42_i32a_cmp *************************************************************/
+/**
+ *  Compares bytes.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 32-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_i32a_cmp
+(
+    int32_t const * a,
+    int32_t const * b,
+    size_t len
+);
+
+/* c42_i32a_equal ***********************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_I32A_EQUAL(_a, _b, _l) (c42_i32a_cmp((_a), (_b), (_l)) == 0)
+
+/* c42_i64a_cmp *************************************************************/
+/**
+ *  Compares bytes.
+ *  @param a first byte array of length @a len
+ *  @param b second byte array of length @a len
+ *  @param len number of bytes in each array
+ *  Bytes are compared one by one as unsigned 64-bit integers.
+ *  @returns    -1  @a a is less than @a b
+ *  @returns     0  @a a is equal to @a b
+ *  @returns    +1  @a a is greater than @a b
+ */
+C42_API int C42_CALL c42_i64a_cmp
+(
+    int64_t const * a,
+    int64_t const * b,
+    size_t len
+);
+
+/* c42_i64a_equal ***********************************************************/
+/**
+ *  Returns true if the given byte arrays of same length have the same content.
+ */
+#define C42_I64A_EQUAL(_a, _b, _l) (c42_i64a_cmp((_a), (_b), (_l)) == 0)
 
 /* c42_digit_from_char ******************************************************/
 /**
