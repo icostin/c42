@@ -537,6 +537,42 @@ C42_API int C42_CALL c42_i64a_cmp
  */
 #define C42_I64A_EQUAL(_a, _b, _l) (c42_i64a_cmp((_a), (_b), (_l)) == 0)
 
+/* c42_upa_copy *************************************************************/
+/**
+ *  Copies an array of pointer-sized unsigned ints.
+ */
+C42_INLINE void c42_upa_copy 
+(
+    uintptr_t * restrict dest,
+    uintptr_t const * restrict src,
+    size_t len
+)
+{
+#if UINTPTR_MAX > 0xFFFFFFFF
+    c42_u64a_copy((uint64_t *) dest, (uint64_t const *) src, len);
+#else
+    c42_u32a_copy((uint32_t *) dest, (uint32_t const *) src, len);
+#endif
+}
+
+/* c42_upa_set **************************************************************/
+/**
+ *  Sets all items in an array of pointer-sized unsigned ints.
+ */
+C42_INLINE void c42_upa_set
+(
+    uintptr_t * restrict dest,
+    uintptr_t value,
+    size_t len
+)
+{
+#if UINTPTR_MAX > 0xFFFFFFFF
+    c42_u64a_set((uint64_t *) dest, (uint64_t) value, len);
+#else
+    c42_u32a_set((uint32_t *) dest, (uint32_t) value, len);
+#endif
+}
+
 /* c42_digit_from_char ******************************************************/
 /**
  *  Decodes the digit from a single ASCII/Unicode character
