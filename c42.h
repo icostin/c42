@@ -704,6 +704,17 @@ C42_API size_t C42_CALL c42_u16z_len
     uint16_t const * a
 );
 
+/* c42_u8an_t ***************************************************************/
+/**
+ *  Byte array stored as pointer and size.
+ */
+typedef struct c42_u8an_s c42_u8an_t;
+struct c42_u8an_s
+{
+    uint8_t * a;
+    size_t n;
+};
+
 /* c42_u64_to_str ***********************************************************/
 /**
  *  Converts the given unsigned 64-bit int to ASCII NUL-terminated string.
@@ -1754,6 +1765,13 @@ C42_INLINE uint_fast8_t c42_ma_free
     (c42_ma_realloc((_ma), (void * *) &(_ptr), \
                     sizeof(*(_ptr)), (_cur_len), (_cur_len) << 1))
 
+/* C42_MA_ARRAY_FREE ********************************************************/
+/**
+ *  Macro for freeing a given typed array.
+ */
+#define C42_MA_ARRAY_FREE(_ma, _ptr, _cur_len) \
+    (c42_ma_free((_ma), (_ptr), sizeof(*(_ptr)), (_cur_len)))
+
 /** @} */
 
 /****************************************************************************/
@@ -2197,6 +2215,9 @@ C42_API void C42_CALL c42_rbtree_init
 /* c42_rbtree_find **********************************************************/
 /**
  *  Finds a node matching the given key.
+ *  @retval C42_RBTREE_FOUND key found
+ *  @retval C42_RBTREE_NOT_FOUND key not found
+ *  @retval C42_RBTREE_ERROR compare failed
  */
 C42_API uint_fast8_t C42_CALL c42_rbtree_find
 (
@@ -2247,6 +2268,28 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
 #define C42_MAJOR 0
 /** C42 library minor version */
 #define C42_MINOR 0
+
+/* C42_FIELD_OFFSET *********************************************************/
+/**
+ *  Returns the byte offset to the beginning of the given structure field
+ */
+#define C42_FIELD_OFFSET(_type, _field) ((intptr_t) &(((_type *) 0)->_field))
+
+/* C42_FIELD_END_OFFSET *****************************************************/
+/**
+ *  Returns the byte offset pointing to the end (last byte address + 1) of
+ *  the given structure field.
+ */
+#define C42_FIELD_END_OFFSET(_type, _field) \
+    ((intptr_t) ((&(((_type *) 0)->_field)) + 1))
+
+/* C42_STRUCT_FROM_FIELD_PTR ************************************************/
+/**
+ *  Obtains the pointer to a structure from the pointer to a field in the 
+ *  structure.
+ */
+#define C42_STRUCT_FROM_FIELD_PTR(_type, _field, _ptr) \
+    ((_type *) ((_ptr) - C42_FIELD_OFFSET(_type, _field)))
 
 /* c42_u32_top_bit **********************************************************/
 /**
