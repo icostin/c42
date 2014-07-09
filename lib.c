@@ -1617,7 +1617,7 @@ C42_API uint_fast8_t C42_CALL c42_rbtree_find
     for (i = 0, n = tree->guard.links[0]; n;)
     {
         path->nodes[++i] = n;
-        cr = cmp(key, n + 1, ctx);
+        cr = cmp(key, n, ctx);
         switch (cr)
         {
         case C42_RBTREE_LESS:

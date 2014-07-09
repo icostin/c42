@@ -541,7 +541,7 @@ C42_API int C42_CALL c42_i64a_cmp
 /**
  *  Copies an array of pointer-sized unsigned ints.
  */
-C42_INLINE void c42_upa_copy 
+C42_INLINE void c42_upa_copy
 (
     uintptr_t * restrict dest,
     uintptr_t const * restrict src,
@@ -1132,6 +1132,43 @@ C42_API int32_t C42_CALL c42_utf8_term_width
  *  @retval C42_FMT_MALFORMED bad format string
  *  @retval C42_FMT_WIDTH_ERROR
  *  @retval C42_FMT_WRITE_ERROR
+ *  Formatting: "$" [[ALIGN] WIDTH] ["." PREC] ["/" GROUP_LEN] [MOD] TYPE
+ *  TYPE:
+ *  * 'b': unsigned 8-bit int (byte)
+ *  * 'B': signed 8-bit int (char)
+ *  * 'w': unsigned 16-bit int
+ *  * 'W': signed 16-bit int
+ *  * 'd': unsigned 32-bit int
+ *  * 'D': signed 32-bit int
+ *  * 'q': unsigned 64-bit int
+ *  * 'Q': signed 64-bit int
+ *  * 'i': unsigned int
+ *  * 'I': signed int
+ *  * 'l': unsigned long
+ *  * 'L': signed long
+ *  * 'h': unsigned short
+ *  * 'H': signed short
+ *  * 'z': size_t
+ *  * 'Z': ptrdiff_t
+ *  * 'p': uintptr_t
+ *  * 'P': intptr_t
+ *  * 'c': Unicode codepoint (32-bit int between 0-0x10FFFF minus 0xD800-0xDFFF)
+ *  * 's': string
+ *  ALIGN:
+ *  * '<' align left
+ *  * '>' align right
+ *  MOD:
+ *  * 'e': escapes strings C-style
+ *  * 'y': radix 2 (binary) and use '0b' prefix
+ *  * 'Y': radix 2 (binary)
+ *  * 'o': radix 8 (octal) and use '0o' prefix
+ *  * 'O': radix 8 (octal)
+ *  * 'n': radix 10 (decimal/normal) and use '0d' prefix
+ *  * 'N': radix 10
+ *  * 'x': radix 16 (hexadecimal) and use '0x' prefix
+ *  * 'X': radix 16 (hexadecimal)
+ *
+ *
  */
 C42_API uint_fast8_t C42_CALL c42_write_vfmt
 (
@@ -1348,9 +1385,9 @@ C42_API uint_fast8_t C42_CALL c42_clconv_c_escape
 #define C42_IO8_FMT_WRITE_ERROR 18 /**< write error */
 #define C42_IO8_FMT_CONV_ERROR 19 /**< conversion error during escaping of some string */
 #define C42_IO8_FMT_NO_CODE 20 /**< formatting code not implemented */
-#define C42_IO8_BAD_OP 21 
+#define C42_IO8_BAD_OP 21
     /**< bad operation; (e.g. write on a read-only file, seek on stdin, etc) */
-#define C42_IO8_NA 22 
+#define C42_IO8_NA 22
     /**< feature not available (close read-side of a regular file) */
 #define C42_IO8_NOT_IMPLEMENTED 126 /**< feature not implemented */
 #define C42_IO8_OTHER_ERROR 127
@@ -1542,8 +1579,8 @@ C42_API uint_fast8_t C42_CALL c42_io8_wfmt
 /**
  *  Writes formatted UTF-8 text using terminal-style width calculations.
  */
-#define c42_io8_fmt(_io, _fmt, ...) \
-    (c42_io8_wfmt((_io), c42_utf8_term_width, NULL, (_fmt), __VA_ARGS__))
+#define c42_io8_fmt(_io, ...) \
+    (c42_io8_wfmt((_io), c42_utf8_term_width, NULL, __VA_ARGS__))
 
 /* c42_io8bc_t **************************************************************/
 /**
@@ -1668,10 +1705,10 @@ C42_INLINE uint_fast8_t C42_CALL c42_file_open
 #define C42_MA_OK 0 /**< alloc/realloc/free done ok */
 #define C42_MA_NO_MEM 1 /**< not enough mem for alloc/realloc */
 #define C42_MA_LIMIT 2 /**< limit reached for alloc/realloc */
-#define C42_MA_BAD_ITEM_SIZE 3 /**< item size passed as 0 or larger than the 
+#define C42_MA_BAD_ITEM_SIZE 3 /**< item size passed as 0 or larger than the
                                  max ptrdiff_t value*/
 #define C42_MA_SIZE_OVERFLOW 4 /**< item_size * count is too big */
-#define C42_MA_CORRUPT 0x7F /**< heap corruption detected; 
+#define C42_MA_CORRUPT 0x7F /**< heap corruption detected;
                                  callers should attempt to exit */
 
 /* c42_ma_f *****************************************************************/
@@ -1735,6 +1772,7 @@ C42_INLINE uint_fast8_t c42_ma_realloc
     return ma_p->handler(ptr_p, item_size * old_count, new_size, ma_p->context);
 }
 
+
 /* c42_ma_free **************************************************************/
 /**
  *  Frees an array.
@@ -1749,6 +1787,20 @@ C42_INLINE uint_fast8_t c42_ma_free
 {
     return ma_p->handler(&ptr, item_size * count, 0, ma_p->context);
 }
+
+/* C42_MA_VAR_ALLOC *********************************************************/
+/**
+ *  Allocates one structure and stores it in the given a typed pointer variable.
+ */
+#define C42_MA_VAR_ALLOC(_ma, _var) \
+    (c42_ma_alloc((_ma), (void * *) &(_var), sizeof(*_var), 1))
+
+/* C42_MA_VAR_FREE **********************************************************/
+/**
+ *  Frees memory allocated by a previous C42_MA_ALLOC().
+ */
+#define C42_MA_VAR_FREE(_ma, _var) \
+    (c42_ma_free((_ma), (_var), sizeof(*_var), 1))
 
 /* C42_MA_ARRAY_ALLOC *******************************************************/
 /**
@@ -1925,7 +1977,7 @@ struct c42_smt_s
 
     void * thread_context; /**< context to be passed to thread functions */
     void * mutex_context; /**< context to be passed to mutex functions */
-    void * cond_context; /**< context to be passed to condition variable 
+    void * cond_context; /**< context to be passed to condition variable
                            functions */
 };
 
@@ -2129,18 +2181,18 @@ C42_INLINE uint_fast8_t C42_CALL c42_smt_cond_wait
 
 #define C42_RBTREE_MAX_DEPTH 0x40 /**< max depth in the tree */
 #define C42_RBTREE_NONE 0 /**< reserved value for no node */
-#define C42_RBTREE_LESS 0 /**< returned by c42_rbtree_cmp_f implementations 
+#define C42_RBTREE_LESS 0 /**< returned by c42_rbtree_cmp_f implementations
                         when the key is less than the key in the given node */
-#define C42_RBTREE_MORE 1 /**< returned by c42_rbtree_cmp_f implementations 
+#define C42_RBTREE_MORE 1 /**< returned by c42_rbtree_cmp_f implementations
                         when the key is bigger than the key in the given node */
-#define C42_RBTREE_EQUAL 2 /**< returned by c42_rbtree_cmp_f implementations 
+#define C42_RBTREE_EQUAL 2 /**< returned by c42_rbtree_cmp_f implementations
                         when the key is equal than the key in the given node */
-#define C42_RBTREE_ERROR 3 /**< returned by c42_rbtree_cmp_f implementations 
+#define C42_RBTREE_ERROR 3 /**< returned by c42_rbtree_cmp_f implementations
                         when there is an error */
 
 #define C42_RBTREE_BLACK 0 /**< color for nodes */
 #define C42_RBTREE_RED 1 /**< color for nodes */
-#define C42_RBTREE_FOUND 0 /**< returned by c42_rbtree_find() 
+#define C42_RBTREE_FOUND 0 /**< returned by c42_rbtree_find()
                                 when key is found */
 #define C42_RBTREE_NOT_FOUND 1 /**< returned by c42_rbtree_find()
                                     when key is not found */
@@ -2158,8 +2210,10 @@ typedef struct c42_rbtree_node_s c42_rbtree_node_t;
  *  @retval C42_RBTREE_MORE if the key is greater than the node's key
  *  @retval C42_RBTREE_EQUAL if the key is equal to that in the node
  *  @retval C42_RBTREE_ERROR if the comparison failed for some reason
+ *  @note Usually the node is part of a larger structure where key information
+ *  is stored.
  */
-typedef uint_fast8_t (C42_CALL * c42_rbtree_cmp_f) 
+typedef uint_fast8_t (C42_CALL * c42_rbtree_cmp_f)
     (
         uintptr_t key,
         c42_rbtree_node_t * node,
@@ -2173,7 +2227,7 @@ typedef uint_fast8_t (C42_CALL * c42_rbtree_cmp_f)
 typedef struct c42_rbtree_path_s c42_rbtree_path_t;
 struct c42_rbtree_path_s
 {
-    c42_rbtree_node_t * nodes[C42_RBTREE_MAX_DEPTH]; /**< 
+    c42_rbtree_node_t * nodes[C42_RBTREE_MAX_DEPTH]; /**<
         trail of nodes traversed from the root */
     uint8_t sides[C42_RBTREE_MAX_DEPTH]; /**<
         sides taken to reach the nodes in the trail */
@@ -2195,7 +2249,7 @@ struct c42_rbtree_node_s
 typedef struct c42_rbtree_s c42_rbtree_t;
 struct c42_rbtree_s
 {
-    c42_rbtree_node_t guard; /**< 
+    c42_rbtree_node_t guard; /**<
         guard node that holds in its left link the root of the tree */
     c42_rbtree_cmp_f cmp; /**< compares a key with a node */
     void * ctx; /**< context data for callbacks */
@@ -2285,7 +2339,7 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
 
 /* C42_STRUCT_FROM_FIELD_PTR ************************************************/
 /**
- *  Obtains the pointer to a structure from the pointer to a field in the 
+ *  Obtains the pointer to a structure from the pointer to a field in the
  *  structure.
  */
 #define C42_STRUCT_FROM_FIELD_PTR(_type, _field, _ptr) \
@@ -2294,7 +2348,7 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
 /* c42_u32_top_bit **********************************************************/
 /**
  *  Returns the number of bits needed to store the given value.
- *  For instance for value 0 it returns 0, for 1 returns 1, 
+ *  For instance for value 0 it returns 0, for 1 returns 1,
  *  for 2 and 3 returns 2, for 4..7 return 3 and so on.
  */
 C42_API uint_fast8_t C42_CALL c42_u32_bit_width (uint32_t n);
