@@ -2306,10 +2306,20 @@ C42_API void C42_CALL c42_rbtree_delete
  */
 C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
 (
-  c42_rbtree_path_t * restrict path,
-  uint8_t side
+    c42_rbtree_path_t * restrict path,
+    uint8_t side
 );
 
+/* c42_rbtree_first *********************************************************/
+/**
+ *  Builds the path to the smallest element in the tree.
+ *  If the tree is empty it returns NULL.
+ */
+C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_first
+(
+    c42_rbtree_path_t * restrict path,
+    c42_rbtree_t * restrict tree
+);
 
 /** @} */
 

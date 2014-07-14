@@ -1638,6 +1638,25 @@ C42_API uint_fast8_t C42_CALL c42_rbtree_find
     return C42_RBTREE_NOT_FOUND;
 }
 
+/* c42_rbtree_first *********************************************************/
+C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_first
+(
+    c42_rbtree_path_t * restrict path,
+    c42_rbtree_t * restrict tree
+)
+{
+    c42_rbtree_node_t * n;
+    c42_rbtree_node_t * m;
+
+    path->last = 0;
+    for (m = NULL, n = tree->guard.links[0]; n; n = n->links[C42_RBTREE_LESS])
+    {
+        path->sides[path->last] = C42_RBTREE_LESS;
+        path->nodes[path->last++] = m = n;
+    }
+    return m;
+}
+
 /* c42_rbtree_np ************************************************************/
 /**
  *  Moves to next/previous node.
