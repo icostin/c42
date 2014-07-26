@@ -1354,6 +1354,97 @@ C42_API uint_fast8_t C42_CALL c42_clconv_c_escape
 
 /** @} */
 
+/* dlist ********************************************************************/
+/** @defgroup dlist Double linked lists
+ *  @{
+ */
+
+typedef union c42_np_u c42_np_t;
+
+#define C42_NEXT 0
+#define C42_PREV 1
+
+union c42_np_u
+{
+    struct
+    {
+        c42_np_t * next;
+        c42_np_t * prev;
+    };
+    c42_np_t * (links[2]);
+};
+
+/* c42_dlist_init ***********************************************************/
+C42_INLINE c42_np_t * c42_dlist_init (c42_np_t * list_p)
+{
+    list_p->next = list_p->prev = list_p;
+    return list_p;
+}
+
+/* c42_dlist_is_empty *******************************************************/
+C42_INLINE int c42_dlist_is_empty (c42_np_t * list_p)
+{
+    return list_p->next == list_p;
+}
+
+/* c42_dlist_ins ************************************************************/
+C42_INLINE void c42_dlist_ins 
+(
+    c42_np_t * anchor_p, 
+    c42_np_t * to_ins_p, 
+    int dir
+)
+{
+    c42_np_t * n;
+    to_ins_p->links[dir] = n = anchor_p->links[dir];
+    to_ins_p->links[dir ^ 1] = anchor_p;
+    n->links[dir ^ 1] = to_ins_p;
+    anchor_p->links[dir] = to_ins_p;
+}
+
+/* c42_dlist_extend *********************************************************/
+C42_INLINE void c42_dlist_extend
+(
+    c42_np_t * dest,
+    c42_np_t * src,
+    int dir
+)
+{
+    int rev = dir ^ 1;
+    c42_np_t * de = dest->links[rev];
+    c42_np_t * sb = src->links[dir];
+    c42_np_t * se = src->links[rev];
+    de->links[dir] = sb;
+    sb->links[rev] = de;
+    se->links[dir] = dest;
+    dest->links[rev] = se;
+}
+
+
+/* c42_dlist_del ************************************************************/
+C42_INLINE void c42_dlist_del
+(
+    c42_np_t * to_del_p
+)
+{
+    c42_np_t * p;
+    c42_np_t * n;
+    n = to_del_p->next;
+    p = to_del_p->prev;
+    n->prev = p;
+    p->next = n;
+}
+
+/* C42_DLIST_APPEND *********************************************************/
+#define C42_DLIST_APPEND(_list, _obj_p, _np_field) \
+    (c42_dlist_ins(&(_list), &(_obj_p)->_np_field, C42_PREV))
+
+/* C42_DLIST_PREPEND ********************************************************/
+#define C42_DLIST_PREPEND(_list, _obj_p, _np_field) \
+    (c42_dlist_ins(&(_list), &(_obj_p)->_np_field, C42_NEXT))
+
+/** @} */
+
 /* io ***********************************************************************/
 /** @defgroup io8 I/O Streams
  *  @{
@@ -1824,6 +1915,44 @@ C42_INLINE uint_fast8_t c42_ma_free
 #define C42_MA_ARRAY_FREE(_ma, _ptr, _cur_len) \
     (c42_ma_free((_ma), (_ptr), sizeof(*(_ptr)), (_cur_len)))
 
+/* c42_malim_ctx_t **********************************************************/
+/**
+ *  Memory allocator with limits (not thread-safe).
+ */
+typedef struct c42_malim_ctx_s c42_malim_ctx_t;
+struct c42_malim_ctx_s
+{
+    c42_ma_t worker; /**< allocator to do the actual allocation;
+                          can be thread-unsafe */
+    size_t ts; /**< total size of all allocated blocks */
+    size_t nb; /**< number of allocated blocks */
+    size_t ts_lim; /**< total size limit */
+    size_t bs_lim; /**< single block size limit */
+    size_t nb_lim; /**< limit of number of blocks */
+};
+
+/* c42_malim_init ***********************************************************/
+/**
+ *  Inits a memory allocator with limits.
+ *  @param malim [out]      allocator to init
+ *  @param ctx [out]        context for the allocator to init
+ *  @param worker_ma [in]   worker allocator
+ *  @param ts_lim [in]      total size limit
+ *  @param bs_lim [in]      block size limit
+ *  @param nb_lim [in]      number of blocks limit
+ *  @warning Even if the worker allocator is thread-safe, this allocator is not 
+ *      thread safe; it can be wrapped into a serialiser memory allocator for 
+ *      thread-safe use.
+ */
+C42_API void C42_CALL c42_malim_init
+(
+    c42_ma_t * restrict malim,
+    c42_malim_ctx_t * restrict ctx,
+    c42_ma_t const * restrict worker_ma,
+    size_t ts_lim,
+    size_t bs_lim,
+    size_t nb_lim
+);
 /** @} */
 
 /****************************************************************************/

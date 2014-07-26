@@ -872,48 +872,56 @@ C42_API uint_fast8_t C42_CALL c42_write_vfmt
                 i64 = (int8_t) va_arg(va, int);
                 goto l_int;
             case 'w':
+                sign_mode = C42_NO_SIGN;
                 i64 = (uint16_t) va_arg(va, int);
                 goto l_int;
             case 'W':
                 i64 = (int16_t) va_arg(va, int);
                 goto l_int;
             case 'd':
+                sign_mode = C42_NO_SIGN;
                 i64 = va_arg(va, uint32_t);
                 goto l_int;
             case 'D':
                 i64 = va_arg(va, int32_t);
                 goto l_int;
             case 'q':
+                sign_mode = C42_NO_SIGN;
                 i64 = va_arg(va, uint64_t);
                 goto l_int;
             case 'Q':
                 i64 = va_arg(va, int64_t);
                 goto l_int;
             case 'i':
+                sign_mode = C42_NO_SIGN;
                 i64 = va_arg(va, unsigned int);
                 goto l_int;
             case 'I':
                 i64 = va_arg(va, signed int);
                 goto l_int;
             case 'l':
+                sign_mode = C42_NO_SIGN;
                 i64 = va_arg(va, unsigned long int);
                 goto l_int;
             case 'L':
                 i64 = va_arg(va, signed long int);
                 goto l_int;
             case 'h':
+                sign_mode = C42_NO_SIGN;
                 i64 = (unsigned short int) va_arg(va, int);
                 goto l_int;
             case 'H':
                 i64 = (signed short int) va_arg(va, int);
                 goto l_int;
             case 'z':
+                sign_mode = C42_NO_SIGN;
                 i64 = va_arg(va, size_t);
                 goto l_int;
             case 'Z':
                 i64 = va_arg(va, ptrdiff_t);
                 goto l_int;
             case 'p':
+                sign_mode = C42_NO_SIGN;
                 i64 = va_arg(va, uintptr_t);
                 goto l_int;
             case 'P':
@@ -1596,9 +1604,6 @@ C42_API void C42_CALL c42_rbtree_init
 
 
 /* c42_rbtree_find **********************************************************/
-/**
- *  Finds a node matching the given key.
- */
 C42_API uint_fast8_t C42_CALL c42_rbtree_find
 (
     c42_rbtree_path_t * restrict path,
@@ -1647,13 +1652,16 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_first
 {
     c42_rbtree_node_t * n;
     c42_rbtree_node_t * m;
+    unsigned int i;
 
-    path->last = 0;
-    for (m = NULL, n = tree->guard.links[0]; n; n = n->links[C42_RBTREE_LESS])
+    path->nodes[0] = &tree->guard;
+    path->sides[0] = 0;
+    for (m = NULL, n = tree->guard.links[i = 0]; n; n = n->links[0])
     {
-        path->sides[path->last] = C42_RBTREE_LESS;
-        path->nodes[path->last++] = m = n;
+        path->nodes[++i] = m = n;
+        path->sides[i] = C42_RBTREE_LESS;
     }
+    path->sides[path->last = i] = C42_RBTREE_EQUAL;
     return m;
 }
 
@@ -1674,15 +1682,25 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
   d = path->last;
   n = path->nodes[d];
   m = n->links[side];
-  if (!m) return NULL;
-  path->sides[d] = side;
-  side = OTHER_SIDE(side);
-  for (; m; m = m->links[side])
+  //if (!m) return NULL;
+  if (m)
   {
-    ++d;
-    path->nodes[d] = m;
-    path->sides[d] = side;
+      path->sides[d] = side;
+      side = OTHER_SIDE(side);
+      for (; m; m = m->links[side])
+      {
+        ++d;
+        path->nodes[d] = m;
+        path->sides[d] = side;
+      }
   }
+  else
+  {
+      do { --d; } while (d && path->sides[d] == side);
+      if (!d) return NULL;
+  }
+
+
   path->sides[d] = C42_RBTREE_EQUAL;
   path->last = d;
   return path->nodes[d];
@@ -1905,5 +1923,70 @@ C42_API uint_fast8_t C42_CALL c42_u32_bit_width (uint32_t n)
         if (n >> i) return i + 1;
     /* n is 0 or 1 */
     return (uint_fast8_t) n;
+}
+
+/* malim_handler ************************************************************/
+static uint_fast8_t C42_CALL malim_handler
+(
+    void * * ptr_p,
+    size_t old_size,
+    size_t new_size,
+    void * ctx
+)
+{
+    size_t nb, ts;
+    c42_malim_ctx_t * q = ctx;
+    uint_fast8_t mae;
+    if (new_size > q->bs_lim) return C42_MA_LIMIT;
+    if (new_size > old_size)
+    {
+        nb = q->nb;
+        if (old_size == 0)
+        {
+            if (nb == q->nb_lim) return C42_MA_LIMIT;
+            ++nb;
+        }
+        ts = new_size - old_size;
+        if (ts + q->ts < ts) return C42_MA_LIMIT;
+        ts += q->ts;
+        if (ts > q->ts_lim) return C42_MA_LIMIT;
+    }
+    else
+    {
+        if (new_size == old_size) return 0;
+        ts = old_size - new_size;
+#if _DEBUG
+        if (q->ts < ts) return C42_MA_CORRUPT;
+        if (new_size == 0 && q->nb == 0) return C42_MA_CORRUPT;
+#endif
+        nb = q->nb - (new_size == 0);
+        ts = q->ts - ts;
+    }
+    mae = q->worker.handler(ptr_p, old_size, new_size, q->worker.context);
+    if (mae) return mae;
+    q->nb = nb;
+    q->ts = ts;
+    return 0;
+};
+
+/* c42_malim_init ***********************************************************/
+C42_API void C42_CALL c42_malim_init
+(
+    c42_ma_t * restrict malim,
+    c42_malim_ctx_t * restrict ctx,
+    c42_ma_t const * restrict worker_ma,
+    size_t ts_lim,
+    size_t bs_lim,
+    size_t nb_lim
+)
+{
+    malim->handler = malim_handler;
+    malim->context = ctx;
+    ctx->worker = *worker_ma;
+    ctx->nb = 0;
+    ctx->ts = 0;
+    ctx->ts_lim = ts_lim;
+    ctx->bs_lim = bs_lim;
+    ctx->nb_lim = nb_lim;
 }
 
