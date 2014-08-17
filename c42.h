@@ -2462,6 +2462,12 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_first
 /** C42 library minor version */
 #define C42_MINOR 0
 
+/* C42_ARRAY_LIT_COUNT ******************************************************/
+/**
+ *  Macro that gives the number of items in an array literal.
+ */
+#define C42_ARRAY_LIT_COUNT(_a) (sizeof(_a) / sizeof((_a)[0]))
+
 /* C42_FIELD_OFFSET *********************************************************/
 /**
  *  Returns the byte offset to the beginning of the given structure field
