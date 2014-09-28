@@ -1,5 +1,16 @@
 #include "c42.h"
 
+#if _DEBUG
+#include <stdio.h>
+#define H printf("exec here: %u\n", __LINE__); fflush(stdout);
+#define L(...) (printf(__VA_ARGS__), fflush(stdout))
+#else
+#define H
+#define L(...) ((void) 0)
+#endif
+#define M(...) \
+    (L("%s:%u:%s: ", __FILE__, __LINE__, __FUNCTION__), L(__VA_ARGS__))
+
 static char const digit_char_table[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* c42_lib_name *************************************************************/
@@ -788,7 +799,7 @@ C42_API uint_fast8_t C42_CALL c42_write_vfmt
     va_list va
 )
 {
-    static uint8_t const nul = 0;
+    //static uint8_t const nul = 0;
     static uint8_t const empty_spaces[] =  // what are we living for?
         "                                                                ";
     uint8_t buffer[0x400];
@@ -1091,7 +1102,7 @@ C42_API uint_fast8_t C42_CALL c42_write_vfmt
         }
 
     }
-    if (writer(&nul, 1, writer_context) != 1) return C42_FMT_WRITE_ERROR;
+    //if (writer(&nul, 1, writer_context) != 1) return C42_FMT_WRITE_ERROR;
 
     return 0;
 }
@@ -1706,6 +1717,23 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_np
   return path->nodes[d];
 }
 
+#if _DEBUG
+void rbtree_dump (c42_rbtree_node_t * n, int depth, char * pfx)
+{
+    int i;
+    if (!n) return;
+    for (i = 0; i < depth; ++i)
+        printf("  ");
+    printf("- %s: %p (%s)\n", pfx, n, n->red ? "red" : "black");
+    if (n->links[0]) rbtree_dump(n->links[0], depth + 1, "left");
+    if (n->links[1]) rbtree_dump(n->links[1], depth + 1, "right");
+}
+
+//#define RBTREE_DUMP(_n) rbtree_dump((_n), 0, "root")
+#define RBTREE_DUMP(_n) ((void) 0)
+#else
+#define RBTREE_DUMP(_n) ((void) 0)
+#endif
 
 /* c42_rbtree_insert ********************************************************/
 /**
@@ -1724,6 +1752,8 @@ C42_API void C42_CALL c42_rbtree_insert
   c42_rbtree_node_t * uncle;
   c42_rbtree_node_t * tmp;
 
+  //L("c42_rbtree_insert(%p). tree before:\n", node);
+  //RBTREE_DUMP(path->nodes[0]->links[0]);
   i = path->last;
   node->links[0] = node->links[1] = NULL;
   node->red = 1;
@@ -1796,9 +1826,10 @@ C42_API void C42_CALL c42_rbtree_delete
   c42_rbtree_node_t tmp;
   unsigned int cs, ds, od, dd, ns, pd, ps, ss, os;
 
+  // L("c42_rbtree_delete. tree before deletion:\n");
+  // RBTREE_DUMP(path->nodes[0]->links[0]);
   od = path->last;
   o = path->nodes[od]; // the node we want to delete
-
   if (o->links[0] && o->links[1])
   {
     ds = path->sides[od - 1];
@@ -1827,6 +1858,7 @@ C42_API void C42_CALL c42_rbtree_delete
     // d has no children since it has at most 1 non-null child and
     // both paths must have same ammount of black nodes
     p->links[ds] = NULL;
+//L("tree after deletion:\n"); RBTREE_DUMP(path->nodes[0]->links[0]);
     return;
   }
   // d is black; it has either no children, or a single red child with no
@@ -1836,6 +1868,7 @@ C42_API void C42_CALL c42_rbtree_delete
   {
     p->links[ds] = c;
     c->red = 0;
+//L("tree after deletion:\n"); RBTREE_DUMP(path->nodes[0]->links[0]);
     return;
   }
 
@@ -1850,6 +1883,7 @@ C42_API void C42_CALL c42_rbtree_delete
     ns = path->sides[pd];
     ss = OTHER_SIDE(ns);
     s = p->links[ss]; // this is a non-NULL node
+    //M("p: %p, s: %p\n", p, s);
     if (s->red) // implies p is black
     {
       /* del case 2 */
@@ -1866,6 +1900,7 @@ C42_API void C42_CALL c42_rbtree_delete
     }
     else
     {
+    //M("p: %p, s: %p, sl: %p, sr: %p\n", p, s, s->links[0], s->links[1]);
       // s is black
       if (!p->red && IS_BLACK(s->links[0]) && IS_BLACK(s->links[1]))
       {
@@ -1909,6 +1944,7 @@ C42_API void C42_CALL c42_rbtree_delete
     break;
   }
 
+//L("tree after deletion:\n"); RBTREE_DUMP(path->nodes[0]->links[0]);
   return;
 }
 #undef OTHER_SIDE
