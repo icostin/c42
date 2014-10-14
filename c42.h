@@ -2488,7 +2488,7 @@ C42_API c42_rbtree_node_t * C42_CALL c42_rbtree_first
  *  structure.
  */
 #define C42_STRUCT_FROM_FIELD_PTR(_type, _field, _ptr) \
-    ((_type *) ((_ptr) - C42_FIELD_OFFSET(_type, _field)))
+    ((_type *) ((intptr_t) (_ptr) - C42_FIELD_OFFSET(_type, _field)))
 
 /* c42_u32_top_bit **********************************************************/
 /**
