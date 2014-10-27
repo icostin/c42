@@ -410,6 +410,9 @@ C42_API size_t C42_CALL c42_u16z_len
     return n;
 }
 
+// #include <inttypes.h>
+// #include <stdio.h>
+// 
 /* c42_u64_to_str ***********************************************************/
 C42_API size_t C42_CALL c42_u64_to_str
 (
@@ -432,7 +435,7 @@ C42_API size_t C42_CALL c42_u64_to_str
     }
 
 #endif
-
+    //printf("[u64_to_str:%"PRIx64",w=%u]\n", value, width);
     for (i = g = 0; i < width || value; i++)
     {
         uint8_t digit = value % radix;
@@ -444,6 +447,7 @@ C42_API size_t C42_CALL c42_u64_to_str
             g = 0;
         }
     }
+    if (!i) str[i++] = '0';
     str[i] = 0;
     for (a = 0, b = i - 1; a < b; a++, b--)
     {

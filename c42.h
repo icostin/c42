@@ -1900,6 +1900,14 @@ C42_INLINE uint_fast8_t c42_ma_free
 #define C42_MA_ARRAY_ALLOC(_ma, _ptr, _len) \
     (c42_ma_alloc((_ma), (void * *) &(_ptr), sizeof(*(_ptr)), (_len)))
 
+/* C42_MA_ARRAY_REALLOC *****************************************************/
+/**
+ *  Macro that reallocates an array.
+ */
+#define C42_MA_ARRAY_REALLOC(_ma, _ptr, _old_len, _new_len) \
+    (c42_ma_realloc((_ma), (void * *) &(_ptr), \
+                    sizeof(*(_ptr)), (_old_len), (_new_len)))
+
 /* C42_MA_ARRAY_DOUBLE ******************************************************/
 /**
  *  Macro that doubles the size of an array held by a typed array
